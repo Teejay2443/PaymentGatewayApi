@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using GatewayApi.Dto;
 using GatewayApi.Services;
 
@@ -16,33 +15,34 @@ public class PaymentsController : ControllerBase
     {
         _paystackService = paystackService;
     }
+
+    // Optional: store payments temporarily for testing
     private static readonly Dictionary<string, PaymentResponse> Payments = new();
 
     [HttpPost]
     public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request)
     {
-        var id = $"PAY-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
-
-        var payment = new PaymentResponse
-        {
-            Id = id,
-            CustomerName = request.CustomerName,
-            CustomerEmail = request.CustomerEmail,
-            Amount = request.Amount,
-            Status = "pending" 
-        };
-
-        Payments[id] = payment;
-
-        // Call Paystack
+        // Call Paystack to initialize payment
         var result = await _paystackService.InitiatePaymentAsync(request);
 
+        if (result.Status == "failed")
+        {
+            return BadRequest(new
+            {
+                status = "error",
+                message = "Failed to initiate payment with Paystack."
+            });
+        }
+
+        // Store the result temporarily (optional)
+        Payments[result.Id] = result;
+
+        // Return success and the Paystack authorization URL
         return Ok(new
         {
-            payment,
             status = "success",
             message = "Payment initiated successfully.",
-            paystack = JsonConvert.DeserializeObject<object>(result.ToString())
+            data = result
         });
     }
 
@@ -58,19 +58,32 @@ public class PaymentsController : ControllerBase
             });
         }
 
-       
+        // Simulate completion if still pending
         if (payment.Status == "pending")
         {
             payment.Status = "completed";
             Payments[id] = payment;
         }
+
         return Ok(new
         {
-            payment,
             status = "success",
-            message = "Payment details retrieved successfully."
+            message = "Payment details retrieved successfully.",
+            data = payment
         });
     }
 
+    [HttpGet("verify/{reference}")]
+    public async Task<IActionResult> VerifyPayment(string reference)
+    {
+        var result = await _paystackService.VerifyPaymentAsync(reference);
+
+        return Ok(new
+        {
+            status = result.Status == "completed" ? "success" : "failed",
+            message = result.Message,
+            data = result
+        });
+    }
 
 }
