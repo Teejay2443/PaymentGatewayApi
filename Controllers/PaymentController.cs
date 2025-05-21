@@ -42,7 +42,7 @@ public class PaymentsController : ControllerBase
             payment,
             status = "success",
             message = "Payment initiated successfully.",
-            paystack = JsonConvert.DeserializeObject<object>(result)
+            paystack = JsonConvert.DeserializeObject<object>(result.ToString())
         });
     }
 
