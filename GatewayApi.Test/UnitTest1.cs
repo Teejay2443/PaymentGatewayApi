@@ -39,7 +39,7 @@ namespace GatewayApi.Test
                 Status = "pending",
             };
 
-            _mockService.Setup(s => s.InitializePayment(request));
+            _mockService.Setup(s => s.InitiatePaymentAsync(request)).ReturnsAsync(expected);
 
             // Act
             var result = await _controller.InitiatePayment(request);
