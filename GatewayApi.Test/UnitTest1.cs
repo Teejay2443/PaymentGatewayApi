@@ -4,8 +4,6 @@ using GatewayApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
-using GatewayApi.Controllers;
-
 namespace GatewayApi.Test
 {
     public class UnitTest1

@@ -25,7 +25,6 @@ namespace GatewayApi.Services
                 email = request.CustomerEmail,
                 amount = (int)(request.Amount * 100) // Paystack expects amount in kobo
             };
-
             var content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
 
             _httpClient.DefaultRequestHeaders.Authorization =
