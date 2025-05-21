@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using GatewayApi.Dto;
 using GatewayApi.Services;
 
@@ -12,42 +11,44 @@ public class PaymentsController : ControllerBase
 {
     private readonly PaystackService _paystackService;
 
+    // TEMPORARY in-memory storage (replace with DB in future)
+    private static readonly Dictionary<string, PaymentResponse> Payments = new();
+
     public PaymentsController(PaystackService paystackService)
     {
         _paystackService = paystackService;
     }
-    private static readonly Dictionary<string, PaymentResponse> Payments = new();
 
     [HttpPost]
     public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request)
     {
-        var id = $"PAY-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+        // Call Paystack first
+        var paystackResult = await _paystackService.InitializePayment(request);
 
+        // Use Paystack reference as our payment ID
         var payment = new PaymentResponse
         {
-            Id = id,
+            Id = paystackResult.Reference,
             CustomerName = request.CustomerName,
             CustomerEmail = request.CustomerEmail,
             Amount = request.Amount,
-            Status = "pending" 
+            Status = "pending"
         };
 
-        Payments[id] = payment;
-
-        // Call Paystack
-        var result = await _paystackService.InitiatePaymentAsync(request);
+        // Store in-memory
+        Payments[payment.Id] = payment;
 
         return Ok(new
         {
             payment,
             status = "success",
             message = "Payment initiated successfully.",
-            paystack = JsonConvert.DeserializeObject<object>(result.ToString())
+            authorizationUrl = paystackResult.AuthorizationUrl
         });
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetPayment(string id)
+    public async Task<IActionResult> GetPayment(string id)
     {
         if (!Payments.TryGetValue(id, out var payment))
         {
@@ -58,12 +59,13 @@ public class PaymentsController : ControllerBase
             });
         }
 
-       
-        if (payment.Status == "pending")
-        {
-            payment.Status = "completed";
-            Payments[id] = payment;
-        }
+        // Check real Paystack status
+        var isSuccessful = await _paystackService.VerifyPayment(id);
+        payment.Status = isSuccessful ? "completed" : "failed";
+
+        // Update memory storage
+        Payments[id] = payment;
+
         return Ok(new
         {
             payment,
@@ -71,6 +73,4 @@ public class PaymentsController : ControllerBase
             message = "Payment details retrieved successfully."
         });
     }
-
-
 }
