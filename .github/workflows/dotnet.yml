@@ -26,5 +26,6 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Run Tests
-      run: dotnet test --no-build --verbosity normal
+  run: dotnet test GatewayApi.Test/GatewayApi.Test.csproj --no-build --verbosity normal
+
 

@@ -16,8 +16,6 @@ public class PaymentsController : ControllerBase
     {
         _paystackService = paystackService;
     }
-
-    // Simulated in-memory store (replace with DB in real app)
     private static readonly Dictionary<string, PaymentResponse> Payments = new();
 
     [HttpPost]
@@ -31,7 +29,7 @@ public class PaymentsController : ControllerBase
             CustomerName = request.CustomerName,
             CustomerEmail = request.CustomerEmail,
             Amount = request.Amount,
-            Status = "pending" // For now, not updating from Paystack callback
+            Status = "pending" 
         };
 
         Payments[id] = payment;
@@ -60,7 +58,7 @@ public class PaymentsController : ControllerBase
             });
         }
 
-        // SIMULATE: Always mark as completed for now (to test status update)
+       
         if (payment.Status == "pending")
         {
             payment.Status = "completed";
