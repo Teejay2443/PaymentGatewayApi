@@ -29,17 +29,22 @@ builder.Services.AddApiVersioning(options =>
 });
 
 var app = builder.Build();
-
-// ✅ Swagger Middleware
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment Gateway API V1");
-        options.RoutePrefix = string.Empty; // Swagger UI at root
-    });
+    app.UseSwaggerUI();
 }
+
+// ✅ Swagger Middleware
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI(options =>
+//    {
+//        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment Gateway API V1");
+//        options.RoutePrefix = string.Empty; // Swagger UI at root
+//    });
+//}
 
 app.UseHttpsRedirection();
 
