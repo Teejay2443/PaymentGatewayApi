@@ -34,7 +34,7 @@ public class PaymentsController : ControllerBase
             });
         }
 
-        // Store the result temporarily (optional)
+        // Store the result temporarily 
         Payments[result.Id] = result;
 
         // Return success and the Paystack authorization URL
