@@ -19,6 +19,10 @@ public class PaymentsController : ControllerBase
     // Optional: store payments temporarily for testing
     private static readonly Dictionary<string, PaymentResponse> Payments = new();
 
+    /// <summary>
+    /// "This method initiate payment to paystack"
+    /// </summary>
+    /// <param name="request"></param>
     [HttpPost]
     public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestDto request)
     {
@@ -46,6 +50,11 @@ public class PaymentsController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// "This method verify the payment by id if it has ben initaited"
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet("{id}")]
     public IActionResult GetPayment(string id)
     {
@@ -73,6 +82,12 @@ public class PaymentsController : ControllerBase
         });
     }
 
+
+    /// <summary>
+    /// "This method verify the payment by reference"
+    /// </summary>
+    /// <param name="reference"></param>
+    /// <returns></returns>
     [HttpGet("verify/{reference}")]
     public async Task<IActionResult> VerifyPayment(string reference)
     {
